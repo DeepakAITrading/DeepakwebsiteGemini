@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Trading Strategies</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to start to allow scrolling if content is long */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px; /* Add some margin from the top */
+        }
+        .input-field {
+            padding: 10px 15px;
+            border: 1px solid #cbd5e0; /* Light gray border */
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6; /* Blue on focus */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Light blue shadow on focus */
+        }
+        .input-field[readonly] {
+            background-color: #e2e8f0; /* Light gray background for read-only */
+            cursor: not-allowed;
+        }
+        .select-dropdown {
+            padding: 10px 15px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #fff;
+            appearance: none; /* Remove default arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3Csvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5em 1.5em;
+            transition: border-color 0.2s;
+        }
+        .select-dropdown:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        .card {
+            background-color: #f8fafc; /* Lighter background for cards */
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #3b82f6; /* Blue button */
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            border: none;
+        }
+        .button:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+            transform: translateY(-1px);
+        }
+        .button:active {
+            transform: translateY(0);
+        }
+        .button.clear {
+            background-color: #ef4444; /* Red for clear button */
+        }
+        .button.clear:hover {
+            background-color: #dc2626; /* Darker red on hover */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Class for red text */
+        .text-red-600 {
+            color: #dc2626; /* Tailwind's red-600 */
+        }
+        /* Class for blue text */
+        .text-blue-600 {
+            color: #2563eb; /* Tailwind's blue-600 */
+        }
+        .disclaimer {
+            background-color: #fffbe6; /* Light yellow background */
+            border-left: 4px solid #f59e0b; /* Orange left border */
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            color: #78350f; /* Dark orange text */
+            font-size: 0.9rem;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">Option Trading Strategies</h1>
+
+        <!-- API Provider Selection -->
+        <div class="mb-6">
+            <label for="api-provider-select" class="block text-gray-700 text-lg font-semibold mb-2">Select API Provider:</label>
+            <select id="api-provider-select" class="select-dropdown">
+                <option value="none">None (Manual Entry)</option>
+                <option value="groww">Groww (Simulated)</option>
+                <option value="zerodha">Zerodha (Simulated)</option>
+                <!-- Add more providers here if needed -->
+            </select>
+        </div>
+
+        <!-- Groww API Simulation Section -->
+        <div id="groww-api-section" class="card mb-6 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Groww API Integration (Simulated)</h2>
+            <div class="mb-4">
+                <label for="groww-api-key" class="block text-gray-700 text-lg font-semibold mb-2">Groww API Key:</label>
+                <input type="password" id="groww-api-key" class="input-field" placeholder="Enter your Groww API Key">
+            </div>
+            <div class="mb-4">
+                <label for="groww-api-secret" class="block text-gray-700 text-lg font-semibold mb-2">Groww API Secret:</label>
+                <input type="password" id="groww-api-secret" class="input-field" placeholder="Enter your Groww API Secret">
+            </div>
+            <button id="groww-login-button" class="button w-full">Login to Groww (Simulated)</button>
+            <p id="groww-login-status" class="mt-2 text-center text-sm text-gray-600"></p>
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> This is a **simulated** integration for demonstration purposes only. In a real application, sensitive API keys and secrets should **never** be exposed in client-side (browser) code. A secure backend server is required to handle actual API calls to financial services like Groww.
+            </div>
+        </div>
+
+        <!-- Zerodha API Simulation Section -->
+        <div id="zerodha-api-section" class="card mb-6 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Zerodha API Integration (Simulated)</h2>
+            <div class="mb-4">
+                <label for="zerodha-api-key" class="block text-gray-700 text-lg font-semibold mb-2">Zerodha API Key:</label>
+                <input type="password" id="zerodha-api-key" class="input-field" placeholder="Enter your Zerodha API Key">
+            </div>
+            <div class="mb-4">
+                <label for="zerodha-access-token" class="block text-gray-700 text-lg font-semibold mb-2">Zerodha Access Token:</label>
+                <input type="password" id="zerodha-access-token" class="input-field" placeholder="Enter your Zerodha Access Token">
+            </div>
+            <button id="zerodha-login-button" class="button w-full">Login to Zerodha (Simulated)</button>
+            <p id="zerodha-login-status" class="mt-2 text-center text-sm text-gray-600"></p>
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> This is a **simulated** integration for demonstration purposes only. In a real application, sensitive API keys and tokens should **never** be exposed in client-side (browser) code. A secure backend server is required to handle actual API calls to financial services like Zerodha.
+            </div>
+        </div>
+
+        <!-- Strategy Selection Section -->
+        <div class="mb-6">
+            <label for="strategy-select" class="block text-gray-700 text-lg font-semibold mb-2">Select a Strategy:</label>
+            <select id="strategy-select" class="select-dropdown">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
+
+        <!-- Company Name Input - Initially Hidden -->
+        <div id="company-name-group" class="mb-6 hidden">
+            <label for="company-name" class="block text-gray-700 text-lg font-semibold mb-2">Company Name (e.g., Reliance Industries):</label>
+            <input type="text" id="company-name" class="input-field" placeholder="Enter company name (e.g., TCS)">
+            <p class="text-sm text-gray-500 mt-1">For a live application, this would typically be an autocomplete connected to a stock market API.</p>
+        </div>
+
+        <!-- Current Value and Lot Size Input -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div>
+                <label for="current-value" class="block text-gray-700 text-lg font-semibold mb-2">Current Underlying Value:</label>
+                <input type="number" id="current-value" class="input-field" placeholder="e.g., 100" value="100">
+            </div>
+            <div>
+                <label for="lot-size" class="block text-gray-700 text-lg font-semibold mb-2">Lot Size (e.g., 100):</label>
+                <input type="number" id="lot-size" class="input-field" placeholder="Enter lot size" value="100">
+            </div>
+        </div>
+
+        <!-- AI Trading Method and Order Details -->
+        <div class="card mt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">AI Trading Method & Order Details</h2>
+            <button id="generate-ai-suggestions" class="button w-full">
+                Generate AI Suggestions
+                <span id="loading-spinner" class="loading-spinner hidden"></span>
+            </button>
+            <div id="ai-suggestions-results" class="mt-6 p-4 bg-green-50 rounded-lg border border-green-200 hidden">
+                <p class="text-green-800 text-lg mb-2"><span class="font-semibold">Trading Method:</span> <span id="ai-trading-method"></span></p>
+                <h3 class="text-xl font-semibold text-green-800 mb-2">Order Details:</h3>
+                <ul id="ai-order-details" class="list-disc list-inside text-green-800 text-lg mb-4">
+                    <!-- AI generated order details will go here -->
+                </ul>
+                <p class="text-green-800 text-lg mb-2"><span class="font-semibold">Required Investment:</span> <span id="ai-required-investment"></span></p>
+                <p class="text-green-800 text-lg mb-2"><span class="font-semibold">Max Risk:</span> <span id="ai-max-risk"></span></p>
+                <p class="text-green-800 text-lg mb-2"><span class="font-semibold">Max Reward:</span> <span id="ai-max-reward"></span></p>
+                <p class="text-green-800 text-lg"><span class="font-semibold">Profit/Loss Explanation:</span> <span id="ai-profit-loss-explanation"></span></p>
+            </div>
+            <div id="ai-error-message" class="mt-4 p-3 bg-red-50 rounded-lg border border-red-200 text-red-800 hidden">
+                <p>Error generating suggestions. Please try again.</p>
+            </div>
+        </div>
+
+        <!-- Strategy Details Display (Moved to bottom) -->
+        <div id="strategy-details" class="card hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Strategy Details</h2>
+            <p class="text-gray-700 text-lg mb-2"><span class="font-semibold">Strategy Name:</span> <span id="strategy-name"></span></p>
+            <p class="text-gray-700 text-lg mb-2"><span class="font-semibold">View:</span> <span id="strategy-view"></span></p>
+            <p class="text-gray-700 text-lg mb-2"><span class="font-semibold">Description:</span> <span id="strategy-description"></span></p>
+            <p class="text-gray-700 text-lg"><span class="font-semibold">Components:</span> <span id="strategy-components"></span></p>
+        </div>
+
+        <!-- Clear Button -->
+        <div class="mt-8 text-center">
+            <button id="clear-all-button" class="button clear w-full md:w-auto">Clear All Selections</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Define the option trading strategies
+        const strategies = [
+            {
+                name: "Long Straddle",
+                view: "Volatile",
+                description: "This strategy is used when you expect a significant price movement in the underlying asset, but you are unsure of the direction.",
+                components: "Buy ATM call + ATM put"
+            },
+            {
+                name: "Short Straddle",
+                view: "Sideways",
+                description: "This strategy is used when you expect the underlying asset's price to remain relatively stable.",
+                components: "Sell ATM call + ATM put"
+            },
+            {
+                name: "Long Strangle",
+                view: "Volatile",
+                description: "Similar to a long straddle, but uses out-of-the-money options to reduce premium costs, suitable for very large expected movements.",
+                components: "Buy OTM call + OTM put"
+            },
+            {
+                name: "Short Strangle",
+                view: "Sideways",
+                description: "Used when you expect the underlying asset's price to stay within a defined range.",
+                components: "Sell OTM call + OTM put"
+            },
+            {
+                name: "Iron Condor",
+                view: "Sideways",
+                description: "A neutral strategy that profits from low volatility, with limited risk and limited reward.",
+                components: "Sell OTM call + put, Buy further OTM call + put"
+            },
+            {
+                name: "Iron Butterfly",
+                view: "Sideways",
+                description: "A neutral strategy that profits from low volatility, offering higher potential reward than an iron condor but with a narrower profit range.",
+                components: "Sell ATM straddle, buy OTM call and put"
+            },
+            {
+                name: "Butterfly Spread (Call/Put)",
+                view: "Neutral",
+                description: "A limited risk, limited reward strategy that profits from the underlying asset remaining near a specific price.",
+                components: "Buy 1 ITM, sell 2 ATM, buy 1 OTM"
+            },
+            {
+                name: "Reverse Iron Condor",
+                view: "Volatile",
+                description: "A strategy that profits from high volatility, with limited risk and limited reward.",
+                components: "Buy strangle + sell further OTM options"
+            },
+            {
+                name: "Covered Call",
+                view: "Bullish to Neutral",
+                description: "Selling call options against shares of stock you already own. This strategy generates income but limits upside potential.",
+                components: "Sell OTM call against owned stock"
+            },
+            {
+                name: "Protective Put",
+                view: "Bullish",
+                description: "Buying a put option on shares of stock you already own to protect against a downside move. This acts like an insurance policy.",
+                components: "Buy OTM put on owned stock"
+            },
+            {
+                name: "Bull Call Spread",
+                view: "Bullish",
+                description: "A vertical spread strategy used when you expect a moderate rise in the underlying asset's price. It involves buying a call and selling another call with a higher strike price and the same expiration.",
+                components: "Buy ITM call, Sell OTM call"
+            },
+            {
+                name: "Bear Put Spread",
+                view: "Bearish",
+                description: "A vertical spread strategy used when you expect a moderate fall in the underlying asset's price. It involves buying a put and selling another put with a lower strike price and the same expiration.",
+                components: "Buy OTM put, Sell ITM put"
+            }
+        ];
+
+        // Get DOM elements
+        const apiProviderSelect = document.getElementById('api-provider-select');
+        const growwApiSection = document.getElementById('groww-api-section');
+        const zerodhaApiSection = document.getElementById('zerodha-api-section');
+
+        const strategySelect = document.getElementById('strategy-select');
+        const companyNameGroup = document.getElementById('company-name-group');
+        const companyNameInput = document.getElementById('company-name');
+        const currentValueInput = document.getElementById('current-value');
+        const lotSizeInput = document.getElementById('lot-size');
+        const strategyDetailsDiv = document.getElementById('strategy-details');
+        const strategyNameSpan = document.getElementById('strategy-name');
+        const strategyViewSpan = document.getElementById('strategy-view');
+        const strategyDescriptionSpan = document.getElementById('strategy-description');
+        const strategyComponentsSpan = document.getElementById('strategy-components');
+
+        const generateAiSuggestionsButton = document.getElementById('generate-ai-suggestions');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const aiSuggestionsResultsDiv = document.getElementById('ai-suggestions-results');
+        const aiTradingMethodSpan = document.getElementById('ai-trading-method');
+        const aiOrderDetailsList = document.getElementById('ai-order-details');
+        const aiRequiredInvestmentSpan = document.getElementById('ai-required-investment');
+        const aiMaxRiskSpan = document.getElementById('ai-max-risk');
+        const aiMaxRewardSpan = document.getElementById('ai-max-reward');
+        const aiProfitLossExplanationSpan = document.getElementById('ai-profit-loss-explanation');
+        const aiErrorMessageDiv = document.getElementById('ai-error-message');
+        const clearAllButton = document.getElementById('clear-all-button');
+
+        // Groww API Simulation elements
+        const growwApiKeyInput = document.getElementById('groww-api-key');
+        const growwApiSecretInput = document.getElementById('groww-api-secret');
+        const growwLoginButton = document.getElementById('groww-login-button');
+        const growwLoginStatus = document.getElementById('groww-login-status');
+
+        // Zerodha API Simulation elements
+        const zerodhaApiKeyInput = document.getElementById('zerodha-api-key');
+        const zerodhaAccessTokenInput = document.getElementById('zerodha-access-token');
+        const zerodhaLoginButton = document.getElementById('zerodha-login-button');
+        const zerodhaLoginStatus = document.getElementById('zerodha-login-status');
+
+        let currentApiProvider = 'none'; // Tracks the currently selected API provider
+        let growwLoggedIn = false; // Flag for Groww simulated login status
+        let zerodhaLoggedIn = false; // Flag for Zerodha simulated login status
+
+        /**
+         * Populates the dropdown with strategy names.
+         */
+        function populateStrategies() {
+            strategySelect.innerHTML = '<option value="">-- Select a Strategy --</option>'; // Default option
+            strategies.forEach((strategy, index) => {
+                const option = document.createElement('option');
+                option.value = index; // Use index as value to easily retrieve strategy object
+                option.textContent = strategy.name;
+                strategySelect.appendChild(option);
+            });
+        }
+
+        /**
+         * Displays the details of the selected strategy.
+         */
+        function displayStrategyDetails() {
+            const selectedIndex = strategySelect.value;
+            if (selectedIndex === "") {
+                strategyDetailsDiv.classList.add('hidden');
+                return;
+            }
+
+            const selectedStrategy = strategies[parseInt(selectedIndex)];
+            if (selectedStrategy) {
+                strategyNameSpan.textContent = selectedStrategy.name;
+                strategyViewSpan.textContent = selectedStrategy.view;
+                strategyDescriptionSpan.textContent = selectedStrategy.description;
+                strategyComponentsSpan.textContent = selectedStrategy.components;
+                strategyDetailsDiv.classList.remove('hidden');
+            } else {
+                strategyDetailsDiv.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Formats a numerical value as Indian Rupees and applies red color if it's a loss/risk.
+         * @param {string} value The string value from the AI (e.g., "$123.45" or "Unlimited").
+         * @param {boolean} isRisk If true, treats the value as a risk and formats it with a minus sign and red color.
+         * @returns {string} HTML string with formatted value and styling.
+         */
+        function formatCurrencyAndColor(value, isRisk = false) {
+            if (value === 'Unlimited') {
+                return 'Unlimited';
+            }
+            // Remove any existing currency symbols and parse to float
+            let numValue = parseFloat(value.replace(/[^0-9.-]+/g,""));
+
+            if (isNaN(numValue)) {
+                return value; // Return original value if not a valid number
+            }
+
+            let formattedValue = `₹${Math.abs(numValue).toFixed(2)}`;
+            let className = '';
+
+            if (isRisk) {
+                // For risk, always show as negative and red if it's a numerical value
+                formattedValue = `-₹${Math.abs(numValue).toFixed(2)}`;
+                className = 'text-red-600';
+            } else if (numValue < 0) {
+                // For reward, if it's negative, show as negative and red
+                formattedValue = `-₹${Math.abs(numValue).toFixed(2)}`;
+                className = 'text-red-600';
+            }
+
+            return `<span class="${className}">${formattedValue}</span>`;
+        }
+
+        /**
+         * Handles the change in API provider selection.
+         */
+        function handleApiProviderChange() {
+            currentApiProvider = apiProviderSelect.value;
+
+            // Hide all API sections initially
+            growwApiSection.classList.add('hidden');
+            zerodhaApiSection.classList.add('hidden');
+            companyNameGroup.classList.add('hidden'); // Hide company name until login
+
+            // Reset login statuses
+            growwLoggedIn = false;
+            zerodhaLoggedIn = false;
+            growwLoginStatus.textContent = '';
+            zerodhaLoginStatus.textContent = '';
+
+            // Reset current value input to manual entry
+            currentValueInput.readOnly = false;
+            currentValueInput.value = ""; // Clear the value
+            currentValueInput.placeholder = "e.g., 100"; // Reset placeholder
+
+            // Show the selected API section
+            if (currentApiProvider === 'groww') {
+                growwApiSection.classList.remove('hidden');
+            } else if (currentApiProvider === 'zerodha') {
+                zerodhaApiSection.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Handles simulated login for the selected API provider.
+         */
+        function handleApiLogin() {
+            let loginSuccess = false;
+            let simulatedValue = "";
+
+            if (currentApiProvider === 'groww') {
+                const apiKey = growwApiKeyInput.value.trim();
+                const apiSecret = growwApiSecretInput.value.trim();
+
+                if (apiKey && apiSecret) {
+                    growwLoggedIn = true;
+                    loginSuccess = true;
+                    simulatedValue = "1500.00"; // Simulated value for Groww
+                    growwLoginStatus.textContent = "Simulated Groww Login Successful! You can now enter a Company Name.";
+                    growwLoginStatus.classList.remove('text-red-600');
+                    growwLoginStatus.classList.add('text-green-600');
+                } else {
+                    growwLoggedIn = false;
+                    growwLoginStatus.textContent = "Please enter both API Key and API Secret for simulated Groww login.";
+                    growwLoginStatus.classList.remove('text-green-600');
+                    growwLoginStatus.classList.add('text-red-600');
+                }
+            } else if (currentApiProvider === 'zerodha') {
+                const apiKey = zerodhaApiKeyInput.value.trim();
+                const accessToken = zerodhaAccessTokenInput.value.trim();
+
+                if (apiKey && accessToken) {
+                    zerodhaLoggedIn = true;
+                    loginSuccess = true;
+                    simulatedValue = "2500.00"; // Simulated value for Zerodha
+                    zerodhaLoginStatus.textContent = "Simulated Zerodha Login Successful! You can now enter a Company Name.";
+                    zerodhaLoginStatus.classList.remove('text-red-600');
+                    zerodhaLoginStatus.classList.add('text-green-600');
+                } else {
+                    zerodhaLoggedIn = false;
+                    zerodhaLoginStatus.textContent = "Please enter both API Key and Access Token for simulated Zerodha login.";
+                    zerodhaLoginStatus.classList.remove('text-green-600');
+                    zerodhaLoginStatus.classList.add('text-red-600');
+                }
+            }
+
+            if (loginSuccess) {
+                companyNameGroup.classList.remove('hidden'); // Show company name input
+                currentValueInput.readOnly = true; // Make current value read-only
+                currentValueInput.value = simulatedValue; // Set simulated value
+            } else {
+                companyNameGroup.classList.add('hidden'); // Hide company name input
+                currentValueInput.readOnly = false; // Make current value editable
+                currentValueInput.value = ""; // Clear the value
+                currentValueInput.placeholder = "e.g., 100"; // Reset placeholder
+            }
+        }
+
+        /**
+         * Generates trading method and order details, including risk/reward, required investment, and P&L explanation, using the Gemini API.
+         */
+        async function generateTradingMethod() {
+            const selectedIndex = strategySelect.value;
+            const companyName = companyNameInput.value.trim();
+            let currentValue = parseFloat(currentValueInput.value);
+            const lotSize = parseInt(lotSizeInput.value);
+
+            // Hide previous results and errors
+            aiSuggestionsResultsDiv.classList.add('hidden');
+            aiErrorMessageDiv.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden'); // Show spinner
+
+            if (selectedIndex === "" || isNaN(currentValue) || isNaN(lotSize) || lotSize <= 0) {
+                aiErrorMessageDiv.textContent = "Please select a strategy, enter a valid current value, and a positive lot size.";
+                aiErrorMessageDiv.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden'); // Hide spinner
+                return;
+            }
+
+            // Check for company name only if an API is "logged in"
+            if ((growwLoggedIn || zerodhaLoggedIn) && companyName === "") {
+                aiErrorMessageDiv.textContent = "Please enter a Company Name after simulated API login.";
+                aiErrorMessageDiv.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+                return;
+            }
+
+            const selectedStrategy = strategies[parseInt(selectedIndex)];
+            if (!selectedStrategy) {
+                aiErrorMessageDiv.textContent = "Invalid strategy selected.";
+                aiErrorMessageDiv.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden'); // Hide spinner
+                return;
+            }
+
+            let apiContext = "";
+            let currentValueSource = "manually entered";
+
+            if (currentApiProvider === 'groww' && growwLoggedIn) {
+                apiContext = `Considering a simulated Groww API connection with API Key: ${growwApiKeyInput.value.trim()} and API Secret: ${growwApiSecretInput.value.trim()}.`;
+                currentValueSource = "simulated from Groww API";
+            } else if (currentApiProvider === 'zerodha' && zerodhaLoggedIn) {
+                apiContext = `Considering a simulated Zerodha API connection with API Key: ${zerodhaApiKeyInput.value.trim()} and Access Token: ${zerodhaAccessTokenInput.value.trim()}.`;
+                currentValueSource = "simulated from Zerodha API";
+            } else {
+                apiContext = "No specific API connection (simulated), using general market context.";
+            }
+
+            const prompt = `Given the following Indian stock market context: Company: ${companyName || 'N/A'}. Strategy: ${selectedStrategy.name} (View: ${selectedStrategy.view}, Description: ${selectedStrategy.description}, Components: ${selectedStrategy.components}), current underlying asset value: ${currentValue} (this value is ${currentValueSource}), and lot size: ${lotSize}.
+            ${apiContext}
+            Please suggest a plausible trading method and specific illustrative strike prices and premiums for each component, along with the order quantity per leg based on the lot size. For each order leg, also suggest a realistic stop loss price.
+            Also, calculate the maximum risk, maximum reward, and the total required investment (sum of premiums for 'Buy' orders multiplied by lot size and quantity, considering margin for 'Sell' orders if applicable, but primarily focus on premium outflow for buys) for this strategy based on the suggested order details and lot size.
+            Finally, provide a concise but detailed explanation of the profit and loss potential, including scenarios (e.g., 'If price goes up to X, profit is Y; if price goes down to Z, loss is A').
+            Assume typical option pricing relative to the current value (e.g., ATM options near current value, OTM options further out, ITM options below current value for calls and above for puts) for the Indian market.
+            Provide all currency values in Indian Rupees (₹).
+            Provide the response as a JSON object with the following structure:
+            {
+              "tradingMethod": "string",
+              "orderDetails": [
+                {
+                  "type": "Call" | "Put",
+                  "action": "Buy" | "Sell",
+                  "strikePrice": "number",
+                  "premium": "number",
+                  "quantity": "number",
+                  "stopLoss": "number"
+                }
+              ],
+              "maxRisk": "string",
+              "maxReward": "string",
+              "requiredInvestment": "string",
+              "profitLossExplanation": "string"
+            }
+            Ensure strike prices and premiums are realistic relative to the current value. For maxRisk, maxReward, and requiredInvestment, use 'Unlimited' if applicable, otherwise a numerical value formatted as a string (e.g., "₹123.45").`;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "tradingMethod": { "type": "STRING" },
+                            "orderDetails": {
+                                "type": "ARRAY",
+                                "items": {
+                                    "type": "OBJECT",
+                                    "properties": {
+                                        "type": { "type": "STRING", "enum": ["Call", "Put"] },
+                                        "action": { "type": "STRING", "enum": ["Buy", "Sell"] },
+                                        "strikePrice": { "type": "NUMBER" },
+                                        "premium": { "type": "NUMBER" },
+                                        "quantity": { "type": "NUMBER" },
+                                        "stopLoss": { "type": "NUMBER" }
+                                    },
+                                    "required": ["type", "action", "strikePrice", "premium", "quantity", "stopLoss"]
+                                }
+                            },
+                            "maxRisk": { "type": "STRING" },
+                            "maxReward": { "type": "STRING" },
+                            "requiredInvestment": { "type": "STRING" },
+                            "profitLossExplanation": { "type": "STRING" }
+                        },
+                        "required": ["tradingMethod", "orderDetails", "maxRisk", "maxReward", "requiredInvestment", "profitLossExplanation"]
+                    }
+                }
+            };
+
+            const apiKey = ""; // Canvas will automatically provide this
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const jsonString = result.candidates[0].content.parts[0].text;
+                    const parsedJson = JSON.parse(jsonString);
+
+                    aiTradingMethodSpan.textContent = parsedJson.tradingMethod;
+                    aiOrderDetailsList.innerHTML = ''; // Clear previous list items
+                    parsedJson.orderDetails.forEach(order => {
+                        const listItem = document.createElement('li');
+                        const formattedPremium = `₹${order.premium.toFixed(2)}`;
+                        const formattedStopLoss = `<span class="text-blue-600">₹${order.stopLoss.toFixed(2)}</span>`; // Blue color for stop loss
+                        listItem.innerHTML = `${order.action} ${order.quantity} ${order.type} @ Strike: ₹${order.strikePrice.toFixed(2)}, Premium: ${formattedPremium} (Stop Loss: ${formattedStopLoss})`;
+                        aiOrderDetailsList.appendChild(listItem);
+                    });
+
+                    aiRequiredInvestmentSpan.innerHTML = formatCurrencyAndColor(parsedJson.requiredInvestment);
+                    aiMaxRiskSpan.innerHTML = formatCurrencyAndColor(parsedJson.maxRisk, true);
+                    aiMaxRewardSpan.innerHTML = formatCurrencyAndColor(parsedJson.maxReward);
+                    aiProfitLossExplanationSpan.textContent = parsedJson.profitLossExplanation;
+
+                    aiSuggestionsResultsDiv.classList.remove('hidden');
+                } else {
+                    aiErrorMessageDiv.textContent = "Could not generate suggestions. Unexpected AI response structure.";
+                    aiErrorMessageDiv.classList.remove('hidden');
+                    console.error("Unexpected AI response:", result);
+                }
+            } catch (error) {
+                aiErrorMessageDiv.textContent = "An error occurred while fetching AI suggestions. Please check your network connection or try again.";
+                aiErrorMessageDiv.classList.remove('hidden');
+                console.error("Fetch error:", error);
+            } finally {
+                loadingSpinner.classList.add('hidden'); // Hide spinner
+            }
+        }
+
+        /**
+         * Clears all input fields and hides result sections.
+         */
+        function clearAllSelections() {
+            // Reset API provider selection and hide all API sections
+            apiProviderSelect.value = "none";
+            growwApiSection.classList.add('hidden');
+            zerodhaApiSection.classList.add('hidden');
+
+            strategySelect.value = ""; // Reset strategy dropdown
+            companyNameInput.value = ""; // Clear company name
+            companyNameGroup.classList.add('hidden'); // Hide company name input
+            currentValueInput.value = ""; // Clear current value
+            currentValueInput.readOnly = false; // Make current value editable
+            currentValueInput.placeholder = "e.g., 100"; // Reset placeholder
+            lotSizeInput.value = ""; // Clear lot size
+
+            growwApiKeyInput.value = ""; // Clear Groww API Key
+            growwApiSecretInput.value = ""; // Clear Groww API Secret
+            growwLoginStatus.textContent = ""; // Clear Groww login status
+            growwLoggedIn = false; // Reset Groww login flag
+
+            zerodhaApiKeyInput.value = ""; // Clear Zerodha API Key
+            zerodhaAccessTokenInput.value = ""; // Clear Zerodha Access Token
+            zerodhaLoginStatus.textContent = ""; // Clear Zerodha login status
+            zerodhaLoggedIn = false; // Reset Zerodha login flag
+
+            strategyDetailsDiv.classList.add('hidden');
+            aiSuggestionsResultsDiv.classList.add('hidden');
+            aiErrorMessageDiv.classList.add('hidden');
+
+            strategyNameSpan.textContent = '';
+            strategyViewSpan.textContent = '';
+            strategyDescriptionSpan.textContent = '';
+            strategyComponentsSpan.textContent = '';
+
+            aiTradingMethodSpan.textContent = '';
+            aiOrderDetailsList.innerHTML = '';
+            aiRequiredInvestmentSpan.textContent = '';
+            aiMaxRiskSpan.textContent = '';
+            aiMaxRewardSpan.textContent = '';
+            aiProfitLossExplanationSpan.textContent = '';
+        }
+
+        // Event Listeners
+        apiProviderSelect.addEventListener('change', handleApiProviderChange);
+        growwLoginButton.addEventListener('click', handleApiLogin);
+        zerodhaLoginButton.addEventListener('click', handleApiLogin);
+
+        strategySelect.addEventListener('change', displayStrategyDetails);
+        generateAiSuggestionsButton.addEventListener('click', generateTradingMethod);
+        clearAllButton.addEventListener('click', clearAllSelections);
+
+        // Initial setup
+        populateStrategies();
+        handleApiProviderChange(); // Call once to set initial state (hide all API sections, set manual current value)
+    </script>
+</body>
+</html>
