@@ -226,11 +226,14 @@
             resultsDiv.innerHTML = '';
             
             // --- SIMULATION of fetching the full instrument list ---
-            setTimeout(async () => {
+            // In a real application hosted on your own server, you would replace this
+            // setTimeout block with a live fetch() call to your backend, which in turn
+            // would call the Angel One API.
+            setTimeout(() => {
                 try {
-                    // In a real app, this list would come from a live API call.
-                    console.log("Simulating fetch of full instrument list from Angel One...");
-                    const fullList = await fetchInstrumentListFromAngelOne();
+                    console.log("Loading comprehensive instrument list...");
+                    // This function now returns a large, embedded list of instruments.
+                    const fullList = getFullInstrumentList();
                     
                     // Filter for NSE Equity stocks only
                     instrumentList = fullList.filter(item => item.exch_seg === 'NSE' && item.symbol.endsWith('-EQ'));
@@ -371,7 +374,7 @@
                 </tr>
             `}).join('');
             
-            const changeColor = data.change >= 0 ? 'text-green-600' : 'text-red-700';
+            const changeColor = data.change >= 0 ? 'text-green-600' : 'text-red-600';
             const changeSign = data.change >= 0 ? '+' : '';
 
             const resultsHtml = `
@@ -436,17 +439,68 @@
         }
 
         /**
-         * Simulates fetching the full instrument list from Angel One's JSON file.
+         * Returns a large, comprehensive list of sample NSE instruments.
+         * In a real application, this data would be fetched from the Angel One API.
          */
-        async function fetchInstrumentListFromAngelOne() {
-            // In a real application, you would fetch this from the URL:
-            // 'https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json'
-            // For this simulation, we are embedding the data.
-            const response = await fetch('https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
+        function getFullInstrumentList() {
+            // This is a large, representative sample of NSE stocks.
+            // In a live app, this would be a fetch() call to the Angel One instruments JSON file.
+            return [
+                {"token":"1","symbol":"AARTIDRUGS-EQ","name":"AARTI DRUGS LTD","ltp":500.05,"open":498,"high":505,"low":497,"close":499},
+                {"token":"2","symbol":"AARTIIND-EQ","name":"AARTI INDUSTRIES LTD","ltp":700.1,"open":698,"high":705,"low":697,"close":699},
+                {"token":"3","symbol":"AAVAS-EQ","name":"AAVAS FINANCIERS LTD","ltp":1500.15,"open":1498,"high":1505,"low":1497,"close":1499},
+                {"token":"4","symbol":"ABB-EQ","name":"ABB INDIA LIMITED","ltp":6400.2,"open":6398,"high":6405,"low":6397,"close":6399},
+                {"token":"5","symbol":"ABBOTINDIA-EQ","name":"ABBOTT INDIA LTD","ltp":26800.25,"open":26798,"high":26805,"low":26797,"close":26799},
+                {"token":"17963","symbol":"ADANIENT-EQ","name":"ADANI ENTERPRISES LTD","ltp":3200,"open":3180,"high":3220,"low":3175,"close":3190},
+                {"token":"14304","symbol":"ADANIPORTS-EQ","name":"ADANI PORTS AND SEZ LTD","ltp":1400,"open":1390,"high":1410,"low":1385,"close":1395},
+                {"token":"11536","symbol":"ASIANPAINT-EQ","name":"ASIAN PAINTS LTD","ltp":2900,"open":2910,"high":2920,"low":2890,"close":2905},
+                {"token":"10940","symbol":"AXISBANK-EQ","name":"AXIS BANK LTD","ltp":1230,"open":1225,"high":1235,"low":1220,"close":1228},
+                {"token":"317","symbol":"BAJAJ-AUTO-EQ","name":"BAJAJ AUTO LTD","ltp":9200,"open":9150,"high":9250,"low":9120,"close":9180},
+                {"token":"5258","symbol":"BAJFINANCE-EQ","name":"BAJAJ FINANCE LTD","ltp":7200.5,"open":7180,"high":7250,"low":7170,"close":7190},
+                {"token":"13538","symbol":"BAJAJFINSV-EQ","name":"BAJAJ FINSERV LTD","ltp":1600,"open":1590,"high":1610,"low":1585,"close":1595},
+                {"token":"236","symbol":"BPCL-EQ","name":"BHARAT PETROLEUM CORP","ltp":650,"open":645,"high":655,"low":640,"close":648},
+                {"token":"333","symbol":"BHARTIARTL-EQ","name":"BHARTI AIRTEL LTD","ltp":1350.7,"open":1345,"high":1355,"low":1340,"close":1348},
+                {"token":"11793","symbol":"BRITANNIA-EQ","name":"BRITANNIA INDUSTRIES LTD","ltp":5300,"open":5280,"high":5320,"low":5270,"close":5290},
+                {"token":"11763","symbol":"CIPLA-EQ","name":"CIPLA LTD","ltp":1500,"open":1490,"high":1510,"low":1485,"close":1495},
+                {"token":"694","symbol":"COALINDIA-EQ","name":"COAL INDIA LTD","ltp":480,"open":478,"high":482,"low":477,"close":479},
+                {"token":"871","symbol":"DRREDDY-EQ","name":"DR REDDYS LABORATORIES","ltp":6300,"open":6280,"high":6320,"low":6270,"close":6290},
+                {"token":"1023","symbol":"EICHERMOT-EQ","name":"EICHER MOTORS LTD","ltp":4500,"open":4480,"high":4520,"low":4470,"close":4490},
+                {"token":"11532","symbol":"GRASIM-EQ","name":"GRASIM INDUSTRIES LTD","ltp":2400,"open":2390,"high":2410,"low":2385,"close":2395},
+                {"token":"1330","symbol":"HCLTECH-EQ","name":"HCL TECHNOLOGIES LTD","ltp":1450,"open":1440,"high":1460,"low":1435,"close":1445},
+                {"token":"1333","symbol":"HDFCBANK-EQ","name":"HDFC BANK LTD","ltp":1705.1,"open":1710,"high":1715.5,"low":1700.2,"close":1708},
+                {"token":"1943","symbol":"HDFCLIFE-EQ","name":"HDFC LIFE INSURANCE CO","ltp":580,"open":578,"high":582,"low":577,"close":579},
+                {"token":"10794","symbol":"HEROMOTOCO-EQ","name":"HERO MOTOCORP LTD","ltp":5500,"open":5480,"high":5520,"low":5470,"close":5490},
+                {"token":"1481","symbol":"HINDALCO-EQ","name":"HINDALCO INDUSTRIES LTD","ltp":680,"open":675,"high":685,"low":670,"close":678},
+                {"token":"1922","symbol":"HINDUNILVR-EQ","name":"HINDUSTAN UNILEVER LTD","ltp":2450,"open":2440,"high":2460,"low":2435,"close":2445},
+                {"token":"1394","symbol":"ICICIBANK-EQ","name":"ICICI BANK LTD","ltp":1150.8,"open":1145,"high":1155,"low":1142,"close":1148},
+                {"token":"10999","symbol":"INDUSINDBK-EQ","name":"INDUSIND BANK LTD","ltp":1500,"open":1490,"high":1510,"low":1485,"close":1495},
+                {"token":"1594","symbol":"INFY-EQ","name":"INFOSYS LTD","ltp":1550.75,"open":1560,"high":1565,"low":1545,"close":1555},
+                {"token":"1624","symbol":"IOC-EQ","name":"INDIAN OIL CORP LTD","ltp":170,"open":169,"high":171,"low":168,"close":169.5},
+                {"token":"1660","symbol":"ITC-EQ","name":"ITC LTD","ltp":430.25,"open":428,"high":432,"low":427.5,"close":429},
+                {"token":"1723","symbol":"JSWSTEEL-EQ","name":"JSW STEEL LTD","ltp":900,"open":895,"high":905,"low":890,"close":898},
+                {"token":"11630","symbol":"KOTAKBANK-EQ","name":"KOTAK MAHINDRA BANK LTD","ltp":1780,"open":1775,"high":1790,"low":1770,"close":1778},
+                {"token":"1997","symbol":"LT-EQ","name":"LARSEN & TOUBRO LTD","ltp":3600,"open":3580,"high":3620,"low":3575,"close":3590},
+                {"token":"2181","symbol":"M&M-EQ","name":"MAHINDRA & MAHINDRA LTD","ltp":2800,"open":2790,"high":2820,"low":2785,"close":2795},
+                {"token":"2031","symbol":"MARUTI-EQ","name":"MARUTI SUZUKI INDIA LTD","ltp":12500,"open":12450,"high":12550,"low":12400,"close":12480},
+                {"token":"2043","symbol":"NESTLEIND-EQ","name":"NESTLE INDIA LTD","ltp":2500,"open":2490,"high":2510,"low":2485,"close":2495},
+                {"token":"10604","symbol":"NTPC-EQ","name":"NTPC LTD","ltp":360,"open":358,"high":362,"low":357,"close":359},
+                {"token":"2475","symbol":"ONGC-EQ","name":"OIL AND NATURAL GAS CORP","ltp":270,"open":268,"high":272,"low":267,"close":269},
+                {"token":"11218","symbol":"POWERGRID-EQ","name":"POWER GRID CORP OF IND","ltp":320,"open":318,"high":322,"low":317,"close":319},
+                {"token":"3045","symbol":"RELIANCE-EQ","name":"RELIANCE INDUSTRIES LTD","ltp":2850.55,"open":2830,"high":2860,"low":2825,"close":2828},
+                {"token":"4963","symbol":"SBIN-EQ","name":"STATE BANK OF INDIA","ltp":830.9,"open":835,"high":840,"low":828,"close":832},
+                {"token":"11373","symbol":"SBILIFE-EQ","name":"SBI LIFE INSURANCE CO","ltp":1450,"open":1440,"high":1460,"low":1435,"close":1445},
+                {"token":"11723","symbol":"SUNPHARMA-EQ","name":"SUN PHARMACEUTICAL IND L","ltp":1600,"open":1590,"high":1610,"low":1585,"close":1595},
+                {"token":"3405","symbol":"TATACONSUM-EQ","name":"TATA CONSUMER PRODUCTS","ltp":1100,"open":1090,"high":1110,"low":1085,"close":1095},
+                {"token":"3432","symbol":"TATAMOTORS-EQ","name":"TATA MOTORS LTD","ltp":980.6,"open":985,"high":990,"low":975,"close":982},
+                {"token":"3456","symbol":"TCS-EQ","name":"TATA CONSULTANCY SERV LT","ltp":3800.2,"open":3810,"high":3820,"low":3790,"close":3805},
+                {"token":"3499","symbol":"TATASTEEL-EQ","name":"TATA STEEL LTD","ltp":175,"open":174,"high":176,"low":173.5,"close":174.5},
+                {"token":"338","symbol":"TECHM-EQ","name":"TECH MAHINDRA LTD","ltp":1300,"open":1290,"high":1310,"low":1285,"close":1295},
+                {"token":"11483","symbol":"TITAN-EQ","name":"TITAN COMPANY LTD","ltp":3500,"open":3480,"high":3520,"low":3475,"close":3490},
+                {"token":"2885","symbol":"ULTRACEMCO-EQ","name":"ULTRATECH CEMENT LTD","ltp":10500,"open":10450,"high":10550,"low":10420,"close":10480},
+                {"token":"11543","symbol":"UPL-EQ","name":"UPL LTD","ltp":550,"open":548,"high":552,"low":547,"close":549},
+                {"token":"3506","symbol":"WIPRO-EQ","name":"WIPRO LTD","ltp":480.15,"open":482,"high":485,"low":478,"close":481.5}
+                // ... This list would continue for all 2000+ NSE stocks.
+            ];
         }
     </script>
 </body>
