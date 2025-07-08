@@ -227,15 +227,15 @@
             resultsDiv.innerHTML = '';
             
             try {
-                // In a real app, this URL points to your own backend server.
+                // This URL points to your own backend server.
                 const backendUrl = 'https://stock-api-8fxs.onrender.com/instruments'; 
                 
                 console.log(`Fetching instruments from your backend: ${backendUrl}`);
                 
-                // This simulates a POST request to your backend with credentials.
-                // Your backend would then call the Angel One API.
+                // This makes a live call to your backend.
+                // Your backend should handle the login with Angel One and return the instrument list.
                 const response = await fetch(backendUrl, {
-                    method: 'POST', // Assuming your backend expects a POST for login
+                    method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ clientId, password, apiKey })
                 });
@@ -246,13 +246,12 @@
 
                 const data = await response.json();
                 
-                // Assuming the backend returns the instrument list and a token
-                instrumentList = data.instrumentList; 
-                authToken = data.authToken; // Store the auth token for future requests
-
+                // The frontend now expects the simple format: [{"symbol":"RELIANCE"}, {"symbol":"TCS"}]
+                instrumentList = data; 
+                
                 const symbolChoices = instrumentList.map(s => ({
                     value: s.symbol,
-                    label: `${s.name} (${s.symbol})`
+                    label: s.symbol // Using symbol for both value and label as name is not provided
                 }));
 
                 choices.setChoices(symbolChoices, 'value', 'label', true);
@@ -273,7 +272,7 @@
         /**
          * Generates analysis for the selected stock.
          */
-        function generateAnalysis() {
+        async function generateAnalysis() {
             const selectedSymbol = choices.getValue(true);
             if (!selectedSymbol) {
                 resultsDiv.innerHTML = `<p class="text-red-500">Please select a stock symbol.</p>`;
@@ -288,19 +287,17 @@
             resultsDiv.innerHTML = '';
 
             try {
-                const stockData = instrumentList.find(item => item.symbol === selectedSymbol);
-                if (!stockData) throw new Error("Could not find data for the selected symbol.");
+                // In a real app, this would make another call to your backend to get the quote.
+                // e.g., `https://stock-api-8fxs.onrender.com/quote?symbol=${selectedSymbol}`
+                // For this simulation, we'll generate random data.
+                const stockData = await fetchStockQuote(selectedSymbol);
                 
                 const analysisData = generateAIAnalysis(stockData);
                 displayAnalysis(analysisData);
 
-                // In a real app, you would now use the authToken to subscribe to a WebSocket
-                // connection managed by your backend server.
-                // For this simulation, we'll continue to generate ticks on the frontend.
                 priceUpdateInterval = setInterval(() => {
                     const simulatedTick = {
                         ltp: parseFloat(document.getElementById('current-stock-price').innerText.replace('₹', '')),
-                        token: stockData.token
                     };
                     handleTick(simulatedTick);
                 }, 1000);
@@ -310,6 +307,23 @@
             } finally {
                 loadingSpinner.style.display = 'none';
             }
+        }
+
+        /**
+         * Simulates fetching a live quote for a specific symbol.
+         */
+        async function fetchStockQuote(symbol) {
+             // This is a simulation. In a real app, this would call your backend's quote endpoint.
+             console.log(`Simulating fetch for quote: ${symbol}`);
+             return new Promise(resolve => {
+                setTimeout(() => {
+                    const ltp = Math.random() * 4000 + 100; // Random price
+                    const close = ltp * (1 + (Math.random() - 0.5) * 0.1); // +/- 5% of ltp
+                    const high = Math.max(ltp, close) * 1.02;
+                    const low = Math.min(ltp, close) * 0.98;
+                    resolve({ symbol, ltp, open: close * 1.01, high, low, close });
+                }, 500);
+             });
         }
         
         /**
