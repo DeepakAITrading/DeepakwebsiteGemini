@@ -63,34 +63,14 @@
                 <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                     <h2 class="text-2xl font-bold mb-4">AI-Powered Stock Analysis (Live Backend)</h2>
                     
-                    <!-- Step 1: Login -->
-                    <div id="login-section">
-                        <p class="text-sm text-gray-600 mb-4">Enter your Angel One credentials to fetch the list of tradable stocks from your live server.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label for="client-id" class="block text-sm font-medium text-gray-700">Client ID / Username</label>
-                                <input type="text" id="client-id" placeholder="Your Angel One ID" class="mt-1 w-full p-3 border border-gray-300 rounded-lg">
-                            </div>
-                             <div>
-                                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                                <input type="password" id="password" placeholder="Your Angel One Password" class="mt-1 w-full p-3 border border-gray-300 rounded-lg">
-                            </div>
-                            <div>
-                                <label for="api-key" class="block text-sm font-medium text-gray-700">SmartAPI App Key</label>
-                                <input type="text" id="api-key" placeholder="Your App Key from SmartAPI" class="mt-1 w-full p-3 border border-gray-300 rounded-lg">
-                            </div>
-                        </div>
-                        <button id="login-btn" class="w-full bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-700 transition duration-300">Login & Fetch Instruments</button>
-                    </div>
-
-                    <!-- Step 2: Symbol Selection and Analysis (hidden initially) -->
-                    <div id="analysis-section" class="hidden mt-6">
+                    <!-- Symbol Selection and Analysis -->
+                    <div id="analysis-section">
                          <label for="stock-symbol-select" class="block text-sm font-medium text-gray-700 mb-1">Select a Company & Generate Analysis</label>
                         <div class="flex flex-col sm:flex-row gap-4 items-center">
                             <div class="flex-grow w-full">
                                <select id="stock-symbol-select"></select>
                             </div>
-                            <button id="generate-analysis-btn" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 w-full sm:w-auto">Generate Analysis</button>
+                            <button id="generate-analysis-btn" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 w-full sm:w-auto" disabled>Generate Analysis</button>
                         </div>
                     </div>
 
@@ -182,16 +162,12 @@
         updateTime();
 
         // --- UI Elements ---
-        const loginBtn = document.getElementById('login-btn');
         const generateBtn = document.getElementById('generate-analysis-btn');
         const resultsDiv = document.getElementById('analysis-results');
         const loadingSpinner = document.getElementById('loading-spinner');
-        const loginSection = document.getElementById('login-section');
-        const analysisSection = document.getElementById('analysis-section');
         let priceUpdateInterval = null;
         let choices;
         let instrumentList = []; // To store the fetched instrument list
-        let authToken = null; // To store the session auth token
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -200,29 +176,21 @@
                 searchEnabled: true,
                 itemSelectText: 'Press to select',
                 placeholder: true,
-                placeholderValue: 'Login to load instruments...',
+                placeholderValue: 'Loading Instruments...',
                 removeItemButton: true,
             });
             choices.disable();
 
-            loginBtn.addEventListener('click', handleLogin);
+            loadInstruments(); // Automatically load instruments on page load
             generateBtn.addEventListener('click', generateAnalysis);
         });
 
         // --- Functions ---
-
+        
         /**
-         * Connects to the live backend to log in and fetch the instrument list.
+         * Connects to the live backend to fetch the instrument list.
          */
-        async function handleLogin() {
-            const clientId = document.getElementById('client-id').value;
-            const password = document.getElementById('password').value;
-            const apiKey = document.getElementById('api-key').value;
-            if (!clientId || !password || !apiKey) {
-                resultsDiv.innerHTML = `<p class="text-red-500 font-semibold">Please fill in all login fields.</p>`;
-                return;
-            }
-
+        async function loadInstruments() {
             loadingSpinner.style.display = 'flex';
             resultsDiv.innerHTML = '';
             
@@ -233,12 +201,7 @@
                 console.log(`Fetching instruments from your backend: ${backendUrl}`);
                 
                 // This makes a live call to your backend.
-                // Your backend should handle the login with Angel One and return the instrument list.
-                const response = await fetch(backendUrl, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ clientId, password, apiKey })
-                });
+                const response = await fetch(backendUrl);
 
                 if (!response.ok) {
                     throw new Error(`Failed to connect to your backend server. Status: ${response.status}`);
@@ -256,14 +219,14 @@
 
                 choices.setChoices(symbolChoices, 'value', 'label', true);
                 choices.enable();
+                generateBtn.disabled = false;
                 
-                loginSection.style.display = 'none';
-                analysisSection.style.display = 'block';
-
-                resultsDiv.innerHTML = `<p class="text-green-600 font-semibold">Login successful! Loaded ${instrumentList.length} NSE stocks. Please select one to analyze.</p>`;
+                if (choices && choices.input && choices.input.element) {
+                    choices.input.element.placeholder = 'Select or type a symbol...';
+                }
 
             } catch (error) {
-                resultsDiv.innerHTML = `<p class="text-red-500 font-semibold">Error during login: ${error.message}</p>`;
+                resultsDiv.innerHTML = `<p class="text-red-500 font-semibold">Error loading instruments: ${error.message}</p>`;
             } finally {
                 loadingSpinner.style.display = 'none';
             }
